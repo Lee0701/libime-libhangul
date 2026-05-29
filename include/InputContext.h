@@ -20,5 +20,6 @@ namespace HangulIME {
 
         int getSelectedIndex();
         void setSelectedIndex(int index);
+        void setPage(int size, int index);
     };
 }

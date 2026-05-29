@@ -11,6 +11,19 @@ namespace HangulIME {
         GetModuleFileName(module->hInstance(), path, sizeof(path));
         std::filesystem::path installDir = std::filesystem::path(path).parent_path();
         this->inputMode = new AutoConversionInputMode(installDir,  "2");
+
+        LOGFONT lf;
+        composingFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
+        GetObject(composingFont, sizeof(lf), &lf);
+        lf.lfHeight = fontHeight(14);
+        lf.lfWeight = FW_NORMAL;
+        composingFont = CreateFontIndirect(&lf);
+
+        candidateFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
+        GetObject(candidateFont, sizeof(lf), &lf);
+        lf.lfHeight = fontHeight(14);
+        lf.lfWeight = FW_NORMAL;
+        candidateFont = CreateFontIndirect(&lf);
     }
 
     TextService::~TextService() {
@@ -110,6 +123,8 @@ namespace HangulIME {
             composingWindow = new Ime::CandidateWindow(this, session);
             composingWindow->Release();
 
+            composingWindow->setFont(composingFont);
+
             auto elementMgr = Ime::ComPtr<ITfUIElementMgr>::queryFrom(threadMgr());
             if(elementMgr) {
                 BOOL pbShow = false;
@@ -160,6 +175,8 @@ namespace HangulIME {
         if(!candidateWindow) {
             candidateWindow = new Ime::CandidateWindow(this, session);
             candidateWindow->Release();
+
+            candidateWindow->setFont(candidateFont);
 
             auto elementMgr = Ime::ComPtr<ITfUIElementMgr>::queryFrom(threadMgr());
             if(elementMgr) {
@@ -220,5 +237,15 @@ namespace HangulIME {
 
     Ime::CandidateWindow *TextService::getCandidateWindow() {
         return this->candidateWindow;
+    }
+
+    int TextService::fontHeight(int size) {
+        int fontHeight = size;
+        HDC hdc = GetDC(NULL);
+        if(hdc) {
+            fontHeight = -MulDiv(size, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+            ReleaseDC(NULL, hdc);
+        }
+        return fontHeight;
     }
 }

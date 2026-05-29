@@ -11,10 +11,12 @@ namespace HangulIME {
         BOOL validComposingWindowElementId;
         DWORD composingWindowElementId;
         Ime::ComPtr<Ime::CandidateWindow> composingWindow;
+        HFONT composingFont;
 
         BOOL validCandidateWindowElementId;
         DWORD candidateWindowElementId;
         Ime::ComPtr<Ime::CandidateWindow> candidateWindow;
+        HFONT candidateFont;
 
         InputMode *inputMode;
 
@@ -63,6 +65,8 @@ namespace HangulIME {
 
     private:
         virtual ~TextService(void);
+
+        int fontHeight(int size);
     };
 
 }

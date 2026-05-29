@@ -4,6 +4,7 @@
 #include <vector>
 #include <filesystem>
 #include "InputContext.h"
+#include "CandidateState.h"
 
 namespace HangulIME {
     class AutoConversionInputMode : public InputMode {
@@ -12,7 +13,7 @@ namespace HangulIME {
         HanjaTable *htbl;
         std::vector<int> inputs;
         std::wstring composing;
-        std::vector<std::wstring> candidates;
+        CandidateState *candidates;
 
     public:
         AutoConversionInputMode(std::filesystem::path installDir, char *keyboardType);

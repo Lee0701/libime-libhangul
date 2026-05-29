@@ -42,4 +42,10 @@ namespace HangulIME {
         if(window == nullptr) return;
         window->setCurrentSel(index);
     }
+
+    void InputContext::setPage(int size, int index) {
+        auto window = service->getCandidateWindow();
+        if(window == nullptr) return;
+        window->SetPageIndex((UINT *) &index, (UINT) size);
+    }
 }

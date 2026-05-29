@@ -1,0 +1,14 @@
+{
+  "name": "woorilee",
+  "version": "0.1",
+  "dependencies": [
+    "check",
+    {
+      "name": "gettext",
+      "features": [
+        "tools"
+      ]
+    },
+    "pkgconf"
+  ]
+}

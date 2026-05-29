@@ -1,0 +1,6 @@
+[submodule "libhangul"]
+	path = libhangul
+	url = https://github.com/Lee0701/libhangul.git
+[submodule "libIME2"]
+	path = libIME2
+	url = https://github.com/Lee0701/libIME2.git

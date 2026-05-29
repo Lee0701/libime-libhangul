@@ -49,15 +49,17 @@ namespace HangulIME {
         virtual void onCompositionTerminated(bool forced);
 
         void createComposingWindow(Ime::EditSession *session);
-        void updateComposingWindow(Ime::EditSession *session);
+        void updateComposingWindow(Ime::EditSession *session, std::wstring *composing);
         void hideComposingWindow();
 
         void createCandidateWindow(Ime::EditSession *session);
-        void updateCandidateWindow(Ime::EditSession *session);
+        void updateCandidateWindow(Ime::EditSession *session, std::vector<std::wstring> *candidates);
         void hideCandidateWindow();
 
         void compose(Ime::EditSession *session, std::wstring *text);
         void commit(Ime::EditSession *session, std::wstring *text);
+
+        Ime::CandidateWindow *getCandidateWindow();
 
     private:
         virtual ~TextService(void);

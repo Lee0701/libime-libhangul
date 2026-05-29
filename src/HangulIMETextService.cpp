@@ -1,10 +1,16 @@
 #include "HangulIMETextService.h"
+#include <filesystem>
 #include "InputContext.h"
 #include "ManualConversionInputMode.h"
+#include "AutoConversionInputMode.h"
 
 namespace HangulIME {
     TextService::TextService(ImeModule *module) : Ime::TextService(module) {
-        this->inputMode = new ManualConversionInputMode("2");
+        // this->inputMode = new ManualConversionInputMode("2");
+        char path[MAX_PATH];
+        GetModuleFileName(module->hInstance(), path, sizeof(path));
+        std::filesystem::path installDir = std::filesystem::path(path).parent_path();
+        this->inputMode = new AutoConversionInputMode(installDir,  "2");
     }
 
     TextService::~TextService() {
@@ -32,7 +38,7 @@ namespace HangulIME {
         case VK_SPACE:
         case VK_RETURN:
         case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN:
-            inputMode->testEditKey(keyCode);
+            return inputMode->testEditKey(keyCode);
         }
         return keyEvent.isChar();
     }
@@ -114,8 +120,26 @@ namespace HangulIME {
         }
     }
 
-    void TextService::updateComposingWindow(Ime::EditSession *session) {
+    void TextService::updateComposingWindow(Ime::EditSession *session, std::wstring *composing) {
         createComposingWindow(session);
+        if(!composingWindow) return;
+
+        composingWindow->clear();
+        composingWindow->add(*composing, ' ');
+        composingWindow->recalculateSize();
+        composingWindow->refresh();
+
+        RECT textRect;
+        if(selectionRect(session, &textRect)) {
+            composingWindow->move(textRect.left, textRect.bottom);
+        }
+
+        if(validComposingWindowElementId) {
+            auto elementMgr = Ime::ComPtr<ITfUIElementMgr>::queryFrom(threadMgr());
+            if(elementMgr) {
+                elementMgr->UpdateUIElement(composingWindowElementId);
+            }
+        }
     }
 
     void TextService::hideComposingWindow() {
@@ -147,8 +171,37 @@ namespace HangulIME {
         }
     }
 
-    void TextService::updateCandidateWindow(Ime::EditSession *session) {
+    void TextService::updateCandidateWindow(Ime::EditSession *session, std::vector<std::wstring> *candidates) {
         createCandidateWindow(session);
+        if(!candidateWindow) return;
+
+        candidateWindow->clear();
+        int index = 0;
+        for(auto &candidate : *candidates) {
+            char ch = '1' + index;
+            candidateWindow->add(candidate, ch);
+            index += 1;
+        }
+
+        candidateWindow->recalculateSize();
+        candidateWindow->refresh();
+
+        RECT textRect, composingWindowRect;
+        if(selectionRect(session, &textRect)) {
+            int height = 0;
+            if(composingWindow) {
+                composingWindow->rect(&composingWindowRect);
+                height = composingWindowRect.bottom - composingWindowRect.top;
+            }
+            candidateWindow->move(textRect.left, textRect.bottom + height * 2);
+        }
+
+        if(validCandidateWindowElementId) {
+            auto elementMgr = Ime::ComPtr<ITfUIElementMgr>::queryFrom(threadMgr());
+            if(elementMgr) {
+                elementMgr->UpdateUIElement(candidateWindowElementId);
+            }
+        }
     }
 
     void TextService::hideCandidateWindow() {
@@ -165,5 +218,7 @@ namespace HangulIME {
         }
     }
 
-
+    Ime::CandidateWindow *TextService::getCandidateWindow() {
+        return this->candidateWindow;
+    }
 }

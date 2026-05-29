@@ -26,4 +26,4 @@ namespace HangulIME {
 
     void InputMode::onReset(void *context) {
     }
-};
+}

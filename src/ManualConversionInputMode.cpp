@@ -2,7 +2,6 @@
 
 namespace HangulIME {
     ManualConversionInputMode::ManualConversionInputMode(char *keyboardType) : InputMode() {
-        this->keyboardType = keyboardType;
         hic = hangul_ic_new(keyboardType);
         this->composing = L"";
     }
@@ -93,5 +92,4 @@ namespace HangulIME {
         }
         return preedit;
     }
-
-};
+}

@@ -6,7 +6,6 @@
 namespace HangulIME {
     class ManualConversionInputMode : public InputMode {
     private:
-        char *keyboardType;
         HangulInputContext *hic;
 
         std::wstring composing;

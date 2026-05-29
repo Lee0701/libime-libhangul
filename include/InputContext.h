@@ -14,5 +14,11 @@ namespace HangulIME {
 
         void compose(std::wstring *text);
         void commit(std::wstring *text);
+
+        void updateComposingWindow(std::wstring *composing);
+        void updateCandidateWindow(std::vector<std::wstring> *candidates);
+
+        int getSelectedIndex();
+        void setSelectedIndex(int index);
     };
 }

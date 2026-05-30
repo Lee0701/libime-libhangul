@@ -4,6 +4,7 @@
 namespace HangulIME {
     AutoConversionInputMode::AutoConversionInputMode(HangulIMESettings *settings) : InputMode() {
         this->hic = hangul_ic_new(settings->hangulKeyboardType.c_str());
+        hangul_ic_set_option(hic, HANGUL_IC_OPTION_AUTO_REORDER, settings->autoReorder);
         this->converter = new HanjaConverter(settings->getInstallDir() / "hanja");
         this->composing = L"";
         this->converted = L"";

@@ -10,6 +10,7 @@ namespace HangulIME {
         hangulKeyboardType = r.Get<std::string>("ime", "hangul_keyboard_type", "2");
         hanjaConversionMode = r.Get<std::string>("ime", "hanja_conversion_mode", "auto");
         candidateFontSize = r.Get<int>("ime", "candidate_font_size", 14);
+        autoReorder = r.Get<bool>("ime", "auto_reorder", false);
     }
 
     void HangulIMESettings::saveSettings() {
@@ -22,6 +23,7 @@ namespace HangulIME {
         r.InsertEntry("ime", "hangul_keyboard_type", hangulKeyboardType);
         r.InsertEntry("ime", "hanja_conversion_mode", hanjaConversionMode);
         r.InsertEntry("ime", "candidate_font_size", std::to_string(candidateFontSize));
+        r.InsertEntry("ime", "auto_reorder", autoReorder);
 
         inih::INIWriter::write(settingsPath.string(), r, true);
     }

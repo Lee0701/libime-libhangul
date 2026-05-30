@@ -14,6 +14,7 @@ namespace HangulIME {
         std::string hangulKeyboardType;
         std::string hanjaConversionMode;
         int candidateFontSize;
+        bool autoReorder;
 
         HangulIMESettings(fs::path installDir, fs::path userDir) : installDir(installDir), userDir(userDir) {
         }

@@ -6,6 +6,11 @@ namespace HangulIME {
         this->hic = hangul_ic_new(keyboardType);
         std::filesystem::path hanjaTablePath = installDir / "hanja" / "hanja.txt";
         this->htbl = hanja_table_load(hanjaTablePath.string().c_str());
+        std::vector<std::string> tablePaths;
+        tablePaths.push_back((installDir / "hanja" / "freq-hanja.txt").string());
+        tablePaths.push_back((installDir / "hanja" / "freq-hanjaeo.txt").string());
+        this->hfreq = new HanjaFrequencyTable(tablePaths);
+
         this->composing = L"";
         this->converted = L"";
         this->locked = L"";
@@ -15,6 +20,7 @@ namespace HangulIME {
     AutoConversionInputMode::~AutoConversionInputMode() {
         hangul_ic_delete(hic);
         hanja_table_delete(htbl);
+        delete this->hfreq;
         delete this->candidates;
     }
 
@@ -25,6 +31,13 @@ namespace HangulIME {
     }
 
     bool AutoConversionInputMode::testEditKey(int code) {
+        switch(code) {
+        case VK_LEFT:
+        case VK_RIGHT:
+        case VK_UP:
+        case VK_DOWN:
+            return composing.length() > 0;
+        }
         return true;
     }
 
@@ -40,11 +53,15 @@ namespace HangulIME {
             inputs.pop_back();
             break;
         case VK_SPACE:
-            inputs.push_back(' ');
-            candidates->setIndex(0);
+            if(locked.length() == 0 && candidates->getIndex() == 0) {
+                inputs.push_back(' ');
+                candidates->setIndex(0);
+            } else {
+                commitCurrent(ic);
+            }
             break;
         case VK_RETURN:
-            commitCurrent(ic);
+            this->flush(ic);
             break;
         case VK_LEFT:
             break;
@@ -77,6 +94,9 @@ namespace HangulIME {
         this->composing = L"";
         this->converted = L"";
         this->locked = L"";
+        InputContext *ic = (InputContext *) context;
+        ic->updateComposingWindow(&converted);
+        ic->updateCandidateWindow(&candidates->getPageCandidates());
     }
 
     void AutoConversionInputMode::update(InputContext *context) {
@@ -111,6 +131,9 @@ namespace HangulIME {
 
             hanja_list_delete(list);
         }
+
+        this->candidates->sortCandidates(hfreq);
+
         if(maxCandLen > 0) {
             this->candidates->insertCandidate(0, this->composing.substr(lockedLen, maxCandLen));
         }

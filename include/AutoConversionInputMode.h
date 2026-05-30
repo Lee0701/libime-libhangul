@@ -5,12 +5,14 @@
 #include <filesystem>
 #include "InputContext.h"
 #include "CandidateState.h"
+#include "HanjaFrequencyTable.h"
 
 namespace HangulIME {
     class AutoConversionInputMode : public InputMode {
     private:
         HangulInputContext *hic;
         HanjaTable *htbl;
+        HanjaFrequencyTable *hfreq;
         std::vector<int> inputs;
         std::wstring composing;
         std::wstring converted;

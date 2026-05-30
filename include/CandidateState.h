@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "HanjaFrequencyTable.h"
 
 namespace HangulIME {
     class CandidateState {
@@ -27,6 +28,7 @@ namespace HangulIME {
         void addCandidate(const std::wstring &candidate);
         void insertCandidate(int index, const std::wstring &candidate);
         void removeCandidate(int index);
+        void sortCandidates(HanjaFrequencyTable *table);
         std::vector<std::wstring> getPageCandidates() const;
     };
 }

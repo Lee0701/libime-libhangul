@@ -1,4 +1,5 @@
 #include "CandidateState.h"
+#include <algorithm>
 
 namespace HangulIME {
     CandidateState::CandidateState(int pageSize) {
@@ -84,6 +85,16 @@ namespace HangulIME {
 
     void CandidateState::removeCandidate(int index) {
         candidates.erase(candidates.begin() + index);
+    }
+
+    void CandidateState::sortCandidates(HanjaFrequencyTable *table) {
+        std::sort(candidates.begin(), candidates.end(), [table] (std::wstring &a, std::wstring &b) -> bool {
+            if(a.length() != b.length()) return a.length() > b.length();
+            int freqA = table->frequency(a);
+            int freqB = table->frequency(b);
+            if(freqA != freqB) return freqA > freqB;
+            return a < b;
+        });
     }
 
     std::vector<std::wstring> CandidateState::getPageCandidates() const {

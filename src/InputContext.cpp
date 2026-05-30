@@ -37,7 +37,6 @@ namespace HangulIME {
     }
 
     void InputContext::setSelectedIndex(int index) {
-        if(index < 0) return;
         auto window = service->getCandidateWindow();
         if(window == nullptr) return;
         window->setCurrentSel(index);

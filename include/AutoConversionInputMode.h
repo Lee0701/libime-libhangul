@@ -13,6 +13,8 @@ namespace HangulIME {
         HanjaTable *htbl;
         std::vector<int> inputs;
         std::wstring composing;
+        std::wstring converted;
+        std::wstring locked;
         CandidateState *candidates;
 
     public:
@@ -30,11 +32,13 @@ namespace HangulIME {
         void update(InputContext *context);
         void updateCandidates();
         void updateComposing();
+        void updateConverted();
 
         std::wstring combineHangul();
 
         void compose(InputContext *context, std::wstring *str);
         void commit(InputContext *context, std::wstring *str);
         void flush(InputContext *context);
+        void commitCurrent(InputContext *context);
     };
 }

@@ -7,6 +7,8 @@ namespace HangulIME {
         std::filesystem::path hanjaTablePath = installDir / "hanja" / "hanja.txt";
         this->htbl = hanja_table_load(hanjaTablePath.string().c_str());
         this->composing = L"";
+        this->converted = L"";
+        this->locked = L"";
         this->candidates = new CandidateState(9);
     }
 
@@ -28,17 +30,22 @@ namespace HangulIME {
 
     bool AutoConversionInputMode::onEditKey(void *context, int code) {
         InputContext *ic = (InputContext *) context;
-        switch(code) {
-        case VK_BACK:
-            if(inputs.size() > 0) {
-                inputs.pop_back();
-            }
-            break;
-        case VK_SPACE:
-        case VK_RETURN:
+        if(inputs.size() == 0) {
             this->flush(ic);
             this->update(ic);
             return false;
+        }
+        switch(code) {
+        case VK_BACK:
+            inputs.pop_back();
+            break;
+        case VK_SPACE:
+            commitCurrent(ic);
+            break;
+        case VK_RETURN:
+            this->flush(ic);
+            this->update(ic);
+            return true;
         case VK_LEFT:
             break;
         case VK_RIGHT:
@@ -60,17 +67,24 @@ namespace HangulIME {
 
     void AutoConversionInputMode::onChar(void *context, int code) {
         inputs.push_back(code);
+        candidates->setIndex(0);
         this->update((InputContext *) context);
     }
 
     void AutoConversionInputMode::onReset(void *context) {
+        this->inputs.clear();
+        this->candidates->clearCandidates();
+        this->composing = L"";
+        this->converted = L"";
+        this->locked = L"";
     }
 
     void AutoConversionInputMode::update(InputContext *context) {
+        int index = candidates->getIndex();
         updateComposing();
         updateCandidates();
-
-        context->updateComposingWindow(&composing);
+        updateConverted();
+        context->updateComposingWindow(&converted);
         context->updateCandidateWindow(&candidates->getPageCandidates());
         context->setSelectedIndex(candidates->getPageIndex());
     }
@@ -79,30 +93,39 @@ namespace HangulIME {
         if(this->htbl == nullptr) return;
 
         this->candidates->clearCandidates();
-        const int searchLen = min(10, (int) this->composing.length());
-        int maxCandLen = 0;
+        const int lockedLen = (int) this->locked.length();
+        const int searchLen = min(10, (int) this->composing.length() - lockedLen);
+        int maxCandLen = min(1, (int) this->composing.length() - lockedLen);
         for(int i = (int) searchLen ; i >= 1 ; i--) {
-            std::string str = ws2s(this->composing.substr(0, i));
+            std::string str = ws2s(this->composing.substr(lockedLen, i));
             HanjaList *list = hanja_table_match_exact(htbl, str.c_str());
 
             int len = hanja_list_get_size(list);
             for(int k = 0 ; k < len ; k++) {
                 std::wstring cand = s2ws(hanja_list_get_nth_value(list, k));
-                this->candidates->addCandidate(cand);
-                if(cand.length() > maxCandLen) {
-                    maxCandLen = (int) cand.length();
-                }
+                this->candidates->addCandidate(cand.substr(0, i));
+            }
+            if(len > 0 && i > maxCandLen) {
+                maxCandLen = i;
             }
 
             hanja_list_delete(list);
         }
         if(maxCandLen > 0) {
-            this->candidates->addCandidate(this->composing.substr(0, maxCandLen));
+            this->candidates->insertCandidate(0, this->composing.substr(lockedLen, maxCandLen));
         }
     }
 
     void AutoConversionInputMode::updateComposing() {
         this->composing = combineHangul();
+        if(composing.length() > 0 && this->locked.length() > composing.length() - 1) {
+            this->locked = this->locked.substr(0, composing.length() - 1);
+        }
+    }
+
+    void AutoConversionInputMode::updateConverted() {
+        std::wstring selected = this->candidates->getCandidate();
+        converted = locked + selected + composing.substr(locked.length() + selected.length());
     }
 
     std::wstring AutoConversionInputMode::combineHangul() {
@@ -138,13 +161,19 @@ namespace HangulIME {
 
     void AutoConversionInputMode::commit(InputContext *context, std::wstring *str) {
         context->commit(str);
-        this->composing = L"";
+        this->onReset(context);
     }
 
     void AutoConversionInputMode::flush(InputContext *context) {
-        context->commit(&this->composing);
-        this->inputs.clear();
-        this->composing = L"";
+        this->commit(context, &this->converted);
     }
 
+    void AutoConversionInputMode::commitCurrent(InputContext *context) {
+        std::wstring selected = this->candidates->getCandidate();
+        this->locked += selected;
+        candidates->setIndex(0);
+        if(locked.length() == converted.length()) {
+            this->flush(context);
+        }
+    }
 }

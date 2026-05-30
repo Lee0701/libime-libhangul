@@ -52,16 +52,21 @@ namespace HangulIME {
         return this->index;
     }
 
+    void CandidateState::setIndex(int index) {
+        this->index = index;
+    }
+
     int CandidateState::getPageIndex() const {
         return this->index % pageSize;
     }
 
     int CandidateState::getPageCount() const {
-        int rem = candidates.size() % pageSize;
-        return (candidates.size() / pageSize) + (rem > 0 ? 1 : 0);
+        int rem = (int) candidates.size() % pageSize;
+        return ((int) candidates.size() / pageSize) + (rem > 0 ? 1 : 0);
     }
 
     std::wstring CandidateState::getCandidate() const {
+        if(index < 0 || index >= candidates.size()) return L"";
         return candidates[index];
     }
 
@@ -71,6 +76,10 @@ namespace HangulIME {
 
     void CandidateState::addCandidate(const std::wstring &candidate) {
         candidates.push_back(candidate);
+    }
+
+    void CandidateState::insertCandidate(int index, const std::wstring &candidate) {
+        candidates.insert(candidates.begin() + index, candidate);
     }
 
     void CandidateState::removeCandidate(int index) {

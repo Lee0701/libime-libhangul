@@ -15,7 +15,9 @@ namespace HangulIME {
         HanjaConverter(std::filesystem::path hanjaDir);
         ~HanjaConverter();
 
-        void loadTables();
         std::vector<std::wstring> convert(const std::wstring &input);
+
+    private:
+        void loadTables();
     };
 }

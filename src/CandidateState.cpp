@@ -71,6 +71,10 @@ namespace HangulIME {
         return candidates[index];
     }
 
+    bool CandidateState::hasCandidates() const {
+        return !candidates.empty();
+    }
+
     void CandidateState::clearCandidates() {
         candidates.clear();
     }

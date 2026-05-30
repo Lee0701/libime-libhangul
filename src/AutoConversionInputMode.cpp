@@ -4,13 +4,7 @@
 namespace HangulIME {
     AutoConversionInputMode::AutoConversionInputMode(std::filesystem::path installDir, char *keyboardType) : InputMode() {
         this->hic = hangul_ic_new(keyboardType);
-        std::filesystem::path hanjaTablePath = installDir / "hanja" / "hanja.txt";
-        this->htbl = hanja_table_load(hanjaTablePath.string().c_str());
-        std::vector<std::string> tablePaths;
-        tablePaths.push_back((installDir / "hanja" / "freq-hanja.txt").string());
-        tablePaths.push_back((installDir / "hanja" / "freq-hanjaeo.txt").string());
-        this->hfreq = new HanjaFrequencyTable(tablePaths);
-
+        this->converter = new HanjaConverter(installDir / "hanja");
         this->composing = L"";
         this->converted = L"";
         this->locked = L"";
@@ -19,8 +13,7 @@ namespace HangulIME {
 
     AutoConversionInputMode::~AutoConversionInputMode() {
         hangul_ic_delete(hic);
-        hanja_table_delete(htbl);
-        delete this->hfreq;
+        delete this->converter;
         delete this->candidates;
     }
 
@@ -111,30 +104,19 @@ namespace HangulIME {
     }
 
     void AutoConversionInputMode::updateCandidates() {
-        if(this->htbl == nullptr) return;
-
         this->candidates->clearCandidates();
         const int lockedLen = (int) this->locked.length();
         const int searchLen = min(10, (int) this->composing.length() - lockedLen);
         int maxCandLen = min(1, (int) this->composing.length() - lockedLen);
         for(int i = (int) searchLen ; i >= 1 ; i--) {
-            std::string str = ws2s(this->composing.substr(lockedLen, i));
-            HanjaList *list = hanja_table_match_exact(htbl, str.c_str());
-
-            int len = hanja_list_get_size(list);
-            for(int k = 0 ; k < len ; k++) {
-                std::wstring cand = s2ws(hanja_list_get_nth_value(list, k));
-                this->candidates->addCandidate(cand.substr(0, i));
+            std::vector<std::wstring> candidates = this->converter->convert(composing.substr(lockedLen, i));
+            for(auto &candidate : candidates) {
+                this->candidates->addCandidate(candidate);
             }
-            if(len > 0 && i > maxCandLen) {
+            if(candidates.size() > 0 && i > maxCandLen) {
                 maxCandLen = i;
             }
-
-            hanja_list_delete(list);
         }
-
-        this->candidates->sortCandidates(hfreq);
-
         if(maxCandLen > 0) {
             this->candidates->insertCandidate(0, this->composing.substr(lockedLen, maxCandLen));
         }

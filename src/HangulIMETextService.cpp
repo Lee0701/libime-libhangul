@@ -65,10 +65,12 @@ namespace HangulIME {
     }
 
     bool TextService::filterKeyDown(Ime::KeyEvent& keyEvent) {
-        if(keyEvent.isKeyDown(VK_CONTROL) || keyEvent.isKeyDown(VK_LCONTROL) || keyEvent.isKeyDown(VK_RCONTROL)) {
+        int keyCode = keyEvent.keyCode();
+        bool controlPressed = keyEvent.isKeyDown(VK_CONTROL) || keyEvent.isKeyDown(VK_LCONTROL) || keyEvent.isKeyDown(VK_RCONTROL);
+        // For Type 3 keyboard driver
+        if(controlPressed && keyCode != VK_HANGUL && keyCode != VK_HANJA) {
             return false;
         }
-        int keyCode = keyEvent.keyCode();
         bool result = keyEvent.isChar();
         switch(keyCode) {
         case VK_BACK:
@@ -83,6 +85,8 @@ namespace HangulIME {
         case VK_HANGUL:
             result = true;
             break;
+        case VK_HANJA:
+            result = currentInputMode->testEditKey(keyCode);
         }
         if(!result) {
             hideComposingWindow();
@@ -93,16 +97,18 @@ namespace HangulIME {
 
     bool TextService::onKeyDown(Ime::KeyEvent& keyEvent, Ime::EditSession *session) {
         InputContext context(session, this);
-        if(keyEvent.isKeyDown(VK_CONTROL) || keyEvent.isKeyDown(VK_LCONTROL) || keyEvent.isKeyDown(VK_RCONTROL)) {
+        int keyCode = keyEvent.keyCode();
+        bool controlPressed = keyEvent.isKeyDown(VK_CONTROL) || keyEvent.isKeyDown(VK_LCONTROL) || keyEvent.isKeyDown(VK_RCONTROL);
+        if(controlPressed && keyCode != VK_HANGUL && keyCode != VK_HANJA) {
             currentInputMode->onReset(&context);
             return false;
         }
-        int keyCode = keyEvent.keyCode();
         switch(keyCode) {
         case VK_ESCAPE:
             currentInputMode->onReset(&context);
             return true;
         case VK_HANGUL:
+            currentInputMode->onReset(&context);
             currentInputMode->onDeactivate();
             if(currentInputMode == hangulInputMode) {
                 currentInputMode = asciiInputMode;
@@ -111,6 +117,8 @@ namespace HangulIME {
             }
             currentInputMode->onActivate();
             return true;
+        case VK_HANJA:
+            return currentInputMode->onEditKey(&context, keyCode);
         case VK_BACK:
         case VK_SPACE:
         case VK_RETURN:

@@ -24,6 +24,7 @@ namespace HangulIME {
         int getPageCount() const;
 
         std::wstring getCandidate() const;
+        bool hasCandidates() const;
         void clearCandidates();
         void addCandidate(const std::wstring &candidate);
         void insertCandidate(int index, const std::wstring &candidate);

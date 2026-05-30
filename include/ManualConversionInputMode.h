@@ -2,13 +2,16 @@
 #include <hangul.h>
 #include "InputMode.h"
 #include "InputContext.h"
+#include "HanjaConverter.h"
+#include "CandidateState.h"
 
 namespace HangulIME {
     class ManualConversionInputMode : public InputMode {
     private:
         HangulInputContext *hic;
-
+        HanjaConverter *converter;
         std::wstring composing;
+        CandidateState *candidates;
 
     public:
         ManualConversionInputMode(std::filesystem::path installDir, char *keyboardType);

@@ -7,6 +7,7 @@
 namespace HangulIME {
     class HanjaConverter {
     private:
+        std::filesystem::path hanjaDir;
         HanjaTable *htbl;
         HanjaFrequencyTable *hfreq;
 
@@ -14,6 +15,7 @@ namespace HangulIME {
         HanjaConverter(std::filesystem::path hanjaDir);
         ~HanjaConverter();
 
+        void loadTables();
         std::vector<std::wstring> convert(const std::wstring &input);
     };
 }

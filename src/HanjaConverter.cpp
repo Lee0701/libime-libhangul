@@ -1,8 +1,22 @@
 #include "HanjaConverter.h"
+#include <thread>
 #include "strcvt.h"
 
 namespace HangulIME {
     HanjaConverter::HanjaConverter(std::filesystem::path hanjaDir) {
+        this->hanjaDir = hanjaDir;
+        this->htbl = nullptr;
+        this->hfreq = nullptr;
+        std::thread loader(&HanjaConverter::loadTables, this);
+        loader.detach();
+    }
+
+    HanjaConverter::~HanjaConverter() {
+        if(this->htbl != nullptr) hanja_table_delete(htbl);
+        if(this->hfreq != nullptr) delete this->hfreq;
+    }
+
+    void HanjaConverter::loadTables() {
         std::filesystem::path hanjaTablePath = hanjaDir / "hanja.txt";
         this->htbl = hanja_table_load(hanjaTablePath.string().c_str());
         std::vector<std::string> tablePaths;
@@ -11,14 +25,9 @@ namespace HangulIME {
         this->hfreq = new HanjaFrequencyTable(tablePaths);
     }
 
-    HanjaConverter::~HanjaConverter() {
-        hanja_table_delete(htbl);
-        delete this->hfreq;
-    }
-
     std::vector<std::wstring> HanjaConverter::convert(const std::wstring &input) {
         std::vector<std::wstring> result;
-        if(this->htbl == nullptr) return result;
+        if(this->htbl == nullptr || this->hfreq == nullptr) return result;
 
         std::string str = ws2s(input);
         HanjaList *list = hanja_table_match_exact(htbl, str.c_str());

@@ -46,7 +46,7 @@ namespace HangulIME {
             inputs.pop_back();
             break;
         case VK_SPACE:
-            if(locked.length() == 0 && candidates->getIndex() == 0) {
+            if(locked.length() == 0 && candidates->getIndex() == 0 && inputs[inputs.size() - 1] != ' ') {
                 inputs.push_back(' ');
                 candidates->setIndex(0);
             } else {
@@ -139,22 +139,25 @@ namespace HangulIME {
         std::wstring result = L"";
         for(int &code : this->inputs) {
             bool res = hangul_ic_process(hic, code);
-            if(!res) {
-                const ucschar *commit = hangul_ic_get_commit_string(hic);
-                if(commit[0] != 0) {
-                    result += (wchar_t) commit[0];
-                }
-                hangul_ic_flush(hic);
-                result += (wchar_t) code;
-            }
             const ucschar *commit = hangul_ic_get_commit_string(hic);
             if(commit[0] != 0) {
-                result += (wchar_t) commit[0];
+                const size_t commit_len = sizeof(commit) / sizeof(ucschar);
+                for(int i = 0 ; i < commit_len ; i++) {
+                    if(!commit[i]) continue;
+                    result += (wchar_t) commit[i];
+                }
+            }
+            if(res == false) {
+                result += (wchar_t) code;
             }
         }
         const ucschar *preedit = hangul_ic_get_preedit_string(hic);
         if(preedit[0] != 0) {
-            result += (wchar_t) preedit[0];
+            const size_t preedit_len = sizeof(preedit) / sizeof(ucschar);
+            for(int i = 0 ; i < preedit_len ; i++) {
+                if(!preedit[i]) continue;
+                result += (wchar_t) preedit[i];
+            }
         }
         hangul_ic_reset(hic);
         return result;

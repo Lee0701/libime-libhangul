@@ -16,10 +16,12 @@ namespace HangulIME {
 
     void ManualConversionInputMode::onActivate() {
         hangul_ic_reset(hic);
+        composing = L"";
     }
 
     void ManualConversionInputMode::onDeactivate() {
         hangul_ic_reset(hic);
+        composing = L"";
     }
 
     bool ManualConversionInputMode::testEditKey(int code) {
@@ -97,8 +99,7 @@ namespace HangulIME {
         this->commit(ic, &commit_str());
         this->compose(ic, &preedit_str());
         if(!res) {
-            std::wstring commit = L"";
-            commit += (wchar_t) code;
+            std::wstring commit(1,(wchar_t) code);
             this->commit(ic, &commit);
         }
         return true;
@@ -131,8 +132,9 @@ namespace HangulIME {
         const ucschar *str = hangul_ic_get_commit_string(hic);
         if(str[0] == 0) return commit;
         const size_t str_len = sizeof(str) / sizeof(ucschar);
-        for(int i = 0 ; i < str_len / 2 ; i++) {
-            commit += (wchar_t) str[i * 2];
+        for(int i = 0 ; i < str_len ; i++) {
+            if(!str[i]) continue;
+            commit += (wchar_t) str[i];
         }
         return commit;
     }
@@ -142,8 +144,9 @@ namespace HangulIME {
         const ucschar *str = hangul_ic_get_preedit_string(hic);
         if(str[0] == 0) return preedit;
         const size_t str_len = sizeof(str) / sizeof(ucschar);
-        for(int i = 0 ; i < str_len / 2 ; i++) {
-            preedit += (wchar_t) str[i * 2];
+        for(int i = 0 ; i < str_len ; i++) {
+            if(!str[i]) continue;
+            preedit += (wchar_t) str[i];
         }
         return preedit;
     }

@@ -1,9 +1,9 @@
 #include "ManualConversionInputMode.h"
 
 namespace HangulIME {
-    ManualConversionInputMode::ManualConversionInputMode(std::filesystem::path installDir, char *keyboardType) : InputMode() {
-        hic = hangul_ic_new(keyboardType);
-        this->converter = new HanjaConverter(installDir / "hanja");
+    ManualConversionInputMode::ManualConversionInputMode(HangulIMESettings *settings) : InputMode() {
+        hic = hangul_ic_new(settings->hangulKeyboardType.c_str());
+        this->converter = new HanjaConverter(settings->getInstallDir() / "hanja");
         this->composing = L"";
         this->candidates = new CandidateState(9);
     }

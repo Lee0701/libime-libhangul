@@ -1,6 +1,7 @@
 #pragma once
-#include <hangul.h>
 #include "InputMode.h"
+#include <hangul.h>
+#include "HangulIMESettings.h"
 #include "InputContext.h"
 #include "HanjaConverter.h"
 #include "CandidateState.h"
@@ -14,7 +15,7 @@ namespace HangulIME {
         CandidateState *candidates;
 
     public:
-        ManualConversionInputMode(std::filesystem::path installDir, char *keyboardType);
+        ManualConversionInputMode(HangulIMESettings *settings);
         ~ManualConversionInputMode();
 
         virtual void onActivate();

@@ -3,6 +3,7 @@
 #include <hangul.h>
 #include <vector>
 #include <filesystem>
+#include "HangulIMESettings.h"
 #include "InputContext.h"
 #include "CandidateState.h"
 #include "HanjaConverter.h"
@@ -19,7 +20,7 @@ namespace HangulIME {
         CandidateState *candidates;
 
     public:
-        AutoConversionInputMode(std::filesystem::path installDir, char *keyboardType);
+        AutoConversionInputMode(HangulIMESettings *settings);
         ~AutoConversionInputMode();
 
         virtual void onActivate();

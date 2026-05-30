@@ -29,9 +29,9 @@ namespace HangulIME {
 
         const char *hangulKeyboardType = settings->hangulKeyboardType.c_str();
         if(settings->hanjaConversionMode == "manual") {
-            this->hangulInputMode = new ManualConversionInputMode(settings->getInstallDir(), (char *) hangulKeyboardType);
+            this->hangulInputMode = new ManualConversionInputMode(settings);
         } else if(settings->hanjaConversionMode == "auto") {
-            this->hangulInputMode = new AutoConversionInputMode(settings->getInstallDir(), (char *) hangulKeyboardType);
+            this->hangulInputMode = new AutoConversionInputMode(settings);
         } else {
             this->hangulInputMode = new InputMode();
         }

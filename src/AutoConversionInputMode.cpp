@@ -2,9 +2,9 @@
 #include "strcvt.h"
 
 namespace HangulIME {
-    AutoConversionInputMode::AutoConversionInputMode(std::filesystem::path installDir, char *keyboardType) : InputMode() {
-        this->hic = hangul_ic_new(keyboardType);
-        this->converter = new HanjaConverter(installDir / "hanja");
+    AutoConversionInputMode::AutoConversionInputMode(HangulIMESettings *settings) : InputMode() {
+        this->hic = hangul_ic_new(settings->hangulKeyboardType.c_str());
+        this->converter = new HanjaConverter(settings->getInstallDir() / "hanja");
         this->composing = L"";
         this->converted = L"";
         this->locked = L"";

@@ -25,17 +25,25 @@ namespace HangulIME {
     }
 
     bool ManualConversionInputMode::testEditKey(int code) {
+        bool result = false;
         switch(code) {
         case VK_BACK:
         case VK_SPACE:
         case VK_RETURN:
-            return !hangul_ic_is_empty(hic);
+            result = !hangul_ic_is_empty(hic);
+            break;
         case VK_HANJA:
-            return this->composing.length() > 0;
+            result = this->composing.length() > 0;
+            break;
         case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN:
-            return this->candidates->hasCandidates();
+            result = this->candidates->hasCandidates();
+            break;
         }
-        return false;
+        if(!result) {
+            hangul_ic_reset(hic);
+            composing = L"";
+        }
+        return result;
     }
 
     bool ManualConversionInputMode::onEditKey(void *context, int code) {

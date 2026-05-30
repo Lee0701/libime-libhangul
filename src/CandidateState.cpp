@@ -18,7 +18,7 @@ namespace HangulIME {
             index++;
         }
         if(index < 0) {
-            index = candidates.size()-1;
+            index = (int) candidates.size() - 1;
         }
         if(index >= candidates.size()) {
             index = 0;

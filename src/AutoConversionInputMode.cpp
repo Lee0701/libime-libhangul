@@ -32,10 +32,10 @@ namespace HangulIME {
 
     bool AutoConversionInputMode::testEditKey(int code) {
         switch(code) {
-        case VK_LEFT:
-        case VK_RIGHT:
-        case VK_UP:
-        case VK_DOWN:
+        case VK_BACK:
+        case VK_SPACE:
+        case VK_RETURN:
+        case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN:
             return composing.length() > 0;
         }
         return true;

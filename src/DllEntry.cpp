@@ -54,5 +54,5 @@ STDAPI DllRegisterServer(void) {
 		fallbackLocale
 	};
 	langProfiles.push_back(std::move(langProfile));
-	return gImeModule->registerServer(L"HangulIME", langProfiles.data(), langProfiles.size());
+	return gImeModule->registerServer(L"HangulIME", langProfiles.data(), (int) langProfiles.size());
 }

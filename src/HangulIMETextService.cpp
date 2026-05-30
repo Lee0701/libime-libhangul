@@ -1,6 +1,7 @@
 #include "HangulIMETextService.h"
 #include <filesystem>
 #include "InputContext.h"
+#include "AsciiInputMode.h"
 #include "ManualConversionInputMode.h"
 #include "AutoConversionInputMode.h"
 
@@ -11,7 +12,7 @@ namespace HangulIME {
         GetModuleFileName(module->hInstance(), path, sizeof(path));
         std::filesystem::path installDir = std::filesystem::path(path).parent_path();
         this->hangulInputMode = new AutoConversionInputMode(installDir,  "2");
-        this->asciiInputMode = new InputMode();
+        this->asciiInputMode = new AsciiInputMode();
         this->inputMode = asciiInputMode;
 
         LOGFONT lf;
@@ -45,21 +46,29 @@ namespace HangulIME {
 
     bool TextService::filterKeyDown(Ime::KeyEvent& keyEvent) {
         if(keyEvent.isKeyDown(VK_CONTROL) || keyEvent.isKeyDown(VK_LCONTROL) || keyEvent.isKeyDown(VK_RCONTROL)) {
-            return true;
+            return false;
         }
         int keyCode = keyEvent.keyCode();
+        bool result = keyEvent.isChar();
         switch(keyCode) {
         case VK_BACK:
         case VK_SPACE:
         case VK_RETURN:
         case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN:
-            return inputMode->testEditKey(keyCode);
+            result = inputMode->testEditKey(keyCode);
+            break;
         case VK_ESCAPE:
-            return true;
+            result = true;
+            break;
         case VK_HANGUL:
-            return true;
+            result = true;
+            break;
         }
-        return keyEvent.isChar();
+        if(!result) {
+            hideComposingWindow();
+            hideCandidateWindow();
+        }
+        return result;
     }
 
     bool TextService::onKeyDown(Ime::KeyEvent& keyEvent, Ime::EditSession *session) {
@@ -225,7 +234,7 @@ namespace HangulIME {
                 composingWindow->rect(&composingWindowRect);
                 height = composingWindowRect.bottom - composingWindowRect.top;
             }
-            candidateWindow->move(textRect.left, textRect.bottom + height * 2);
+            candidateWindow->move(textRect.left, textRect.bottom + height / 2 * 3);
         }
 
         if(validCandidateWindowElementId) {

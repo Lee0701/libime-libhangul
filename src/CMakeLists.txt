@@ -11,7 +11,7 @@ set( MAIN_LIB_NAME ${CMAKE_PROJECT_NAME} )
 
 add_library( ${MAIN_LIB_NAME} SHARED ${SOURCES} ${DEF_FILE} )
 
-target_link_libraries( ${MAIN_LIB_NAME}
+target_link_libraries( ${MAIN_LIB_NAME} PUBLIC
     libIME2_static
     hangul
 )

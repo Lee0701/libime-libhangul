@@ -4,3 +4,6 @@
 [submodule "libIME2"]
 	path = libIME2
 	url = https://github.com/Lee0701/libIME2.git
+[submodule "ini-cpp"]
+	path = ini-cpp
+	url = https://github.com/SSARCandy/ini-cpp.git

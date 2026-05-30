@@ -10,6 +10,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/libhangul)
 include_directories(
     ${CMAKE_SOURCE_DIR}/libIME2/src
     ${CMAKE_SOURCE_DIR}/libhangul/hangul
+    ${CMAKE_SOURCE_DIR}/ini-cpp/ini
 )
 
 add_subdirectory( src bin )

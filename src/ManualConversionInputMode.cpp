@@ -1,7 +1,7 @@
 #include "ManualConversionInputMode.h"
 
 namespace HangulIME {
-    ManualConversionInputMode::ManualConversionInputMode(char *keyboardType) : InputMode() {
+    ManualConversionInputMode::ManualConversionInputMode(std::filesystem::path installDir, char *keyboardType) : InputMode() {
         hic = hangul_ic_new(keyboardType);
         this->composing = L"";
     }

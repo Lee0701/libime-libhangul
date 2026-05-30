@@ -3,11 +3,14 @@
 #include <MessageWindow.h>
 #include <CandidateWindow.h>
 #include "HangulIMEModule.h"
+#include "HangulIMESettings.h"
 #include "InputMode.h"
 
 namespace HangulIME {
     class TextService : public Ime::TextService {
     private:
+        HangulIMESettings *settings;
+
         BOOL validComposingWindowElementId;
         DWORD composingWindowElementId;
         Ime::ComPtr<Ime::CandidateWindow> composingWindow;
@@ -20,7 +23,7 @@ namespace HangulIME {
 
         InputMode *hangulInputMode;
         InputMode *asciiInputMode;
-        InputMode *inputMode;
+        InputMode *currentInputMode;
 
     public:
         TextService(ImeModule *module);

@@ -1,5 +1,6 @@
 #include "HangulIMETextService.h"
 #include <filesystem>
+#include <ShlObj_core.h>
 #include "InputContext.h"
 #include "AsciiInputMode.h"
 #include "ManualConversionInputMode.h"
@@ -7,38 +8,57 @@
 
 namespace HangulIME {
     TextService::TextService(ImeModule *module) : Ime::TextService(module) {
-        // this->inputMode = new ManualConversionInputMode("2");
-        char path[MAX_PATH];
-        GetModuleFileName(module->hInstance(), path, sizeof(path));
+        wchar_t path[MAX_PATH];
+        GetModuleFileNameW(module->hInstance(), path, sizeof(path));
         std::filesystem::path installDir = std::filesystem::path(path).parent_path();
-        this->hangulInputMode = new AutoConversionInputMode(installDir,  "2");
+        SHGetFolderPathW(NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE, NULL, 0, path);
+        std::filesystem::path userDir = std::filesystem::path(path) / "libime-libhangul";
+        if (!std::filesystem::exists(userDir)) {
+            std::filesystem::create_directories(userDir);
+        }
+        this->settings = new HangulIMESettings(installDir, userDir);
+
+    }
+
+    TextService::~TextService() {
+        delete this->settings;
+    }
+
+    void TextService::onActivate() {
+        this->settings->loadSettings();
+
+        const char *hangulKeyboardType = settings->hangulKeyboardType.c_str();
+        if(settings->hanjaConversionMode == "manual") {
+            this->hangulInputMode = new ManualConversionInputMode(settings->getInstallDir(), (char *) hangulKeyboardType);
+        } else if(settings->hanjaConversionMode == "auto") {
+            this->hangulInputMode = new AutoConversionInputMode(settings->getInstallDir(), (char *) hangulKeyboardType);
+        } else {
+            this->hangulInputMode = new InputMode();
+        }
         this->asciiInputMode = new AsciiInputMode();
-        this->inputMode = asciiInputMode;
+        this->currentInputMode = asciiInputMode;
 
         LOGFONT lf;
         composingFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
         GetObject(composingFont, sizeof(lf), &lf);
-        lf.lfHeight = fontHeight(14);
+        lf.lfHeight = fontHeight(settings->candidateFontSize);
         lf.lfWeight = FW_NORMAL;
         composingFont = CreateFontIndirect(&lf);
 
         candidateFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
         GetObject(candidateFont, sizeof(lf), &lf);
-        lf.lfHeight = fontHeight(14);
+        lf.lfHeight = fontHeight(settings->candidateFontSize);
         lf.lfWeight = FW_NORMAL;
         candidateFont = CreateFontIndirect(&lf);
-    }
 
-    TextService::~TextService() {
-        delete this->inputMode;
-    }
-
-    void TextService::onActivate() {
-        inputMode->onActivate();
+        currentInputMode->onActivate();
     }
 
     void TextService::onDeactivate() {
-        inputMode->onDeactivate();
+        currentInputMode->onDeactivate();
+
+        delete this->asciiInputMode;
+        delete this->hangulInputMode;
     }
 
     void TextService::onFocus() {
@@ -55,7 +75,7 @@ namespace HangulIME {
         case VK_SPACE:
         case VK_RETURN:
         case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN:
-            result = inputMode->testEditKey(keyCode);
+            result = currentInputMode->testEditKey(keyCode);
             break;
         case VK_ESCAPE:
             result = true;
@@ -74,28 +94,30 @@ namespace HangulIME {
     bool TextService::onKeyDown(Ime::KeyEvent& keyEvent, Ime::EditSession *session) {
         InputContext context(session, this);
         if(keyEvent.isKeyDown(VK_CONTROL) || keyEvent.isKeyDown(VK_LCONTROL) || keyEvent.isKeyDown(VK_RCONTROL)) {
-            inputMode->onReset(&context);
+            currentInputMode->onReset(&context);
             return false;
         }
         int keyCode = keyEvent.keyCode();
         switch(keyCode) {
         case VK_ESCAPE:
-            inputMode->onReset(&context);
+            currentInputMode->onReset(&context);
             return true;
         case VK_HANGUL:
-            if(inputMode == hangulInputMode) {
-                inputMode = asciiInputMode;
+            currentInputMode->onDeactivate();
+            if(currentInputMode == hangulInputMode) {
+                currentInputMode = asciiInputMode;
             } else {
-                inputMode = hangulInputMode;
+                currentInputMode = hangulInputMode;
             }
+            currentInputMode->onActivate();
             return true;
         case VK_BACK:
         case VK_SPACE:
         case VK_RETURN:
         case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN:
-            return inputMode->onEditKey(&context, keyCode);
+            return currentInputMode->onEditKey(&context, keyCode);
         }
-        return inputMode->onChar(&context, keyEvent.charCode());
+        return currentInputMode->onChar(&context, keyEvent.charCode());
     }
 
     bool TextService::filterKeyUp(Ime::KeyEvent& keyEvent) {

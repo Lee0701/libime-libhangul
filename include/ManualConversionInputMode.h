@@ -11,7 +11,7 @@ namespace HangulIME {
         std::wstring composing;
 
     public:
-        ManualConversionInputMode(char *keyboardType);
+        ManualConversionInputMode(std::filesystem::path installDir, char *keyboardType);
         ~ManualConversionInputMode();
 
         virtual void onActivate();

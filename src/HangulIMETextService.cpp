@@ -17,7 +17,6 @@ namespace HangulIME {
             std::filesystem::create_directories(userDir);
         }
         this->settings = new HangulIMESettings(installDir, userDir);
-
     }
 
     TextService::~TextService() {
@@ -26,6 +25,7 @@ namespace HangulIME {
 
     void TextService::onActivate() {
         this->settings->loadSettings();
+        this->settings->saveSettings();
 
         const char *hangulKeyboardType = settings->hangulKeyboardType.c_str();
         if(settings->hanjaConversionMode == "manual") {
@@ -56,6 +56,9 @@ namespace HangulIME {
 
     void TextService::onDeactivate() {
         currentInputMode->onDeactivate();
+
+        hideComposingWindow();
+        hideCandidateWindow();
 
         delete this->asciiInputMode;
         delete this->hangulInputMode;

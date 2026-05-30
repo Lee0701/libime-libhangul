@@ -3,23 +3,13 @@
 #include "ini.h"
 
 namespace HangulIME {
-    void HangulIMESettings::defaultSettings() {
-        hangulKeyboardType = "2";
-        hanjaConversionMode = "auto";
-        candidateFontSize = 14;
-    }
-
     void HangulIMESettings::loadSettings() {
         fs::path settingsPath = userDir / "settings.ini";
-        if (fs::exists(settingsPath)) {
-            inih::INIReader r(settingsPath.string());
-            hangulKeyboardType = r.Get<std::string>("ime", "hangul_keyboard_type");
-            hanjaConversionMode = r.Get<std::string>("ime", "hanja_conversion_mode");
-            candidateFontSize = r.Get<int>("ime", "candidate_font_size");
-        } else {
-            defaultSettings();
-            saveSettings();
-        }
+        inih::INIReader r;
+        if(fs::exists(settingsPath)) r = inih::INIReader(settingsPath.string());
+        hangulKeyboardType = r.Get<std::string>("ime", "hangul_keyboard_type", "2");
+        hanjaConversionMode = r.Get<std::string>("ime", "hanja_conversion_mode", "auto");
+        candidateFontSize = r.Get<int>("ime", "candidate_font_size", 14);
     }
 
     void HangulIMESettings::saveSettings() {
@@ -33,6 +23,6 @@ namespace HangulIME {
         r.InsertEntry("ime", "hanja_conversion_mode", hanjaConversionMode);
         r.InsertEntry("ime", "candidate_font_size", std::to_string(candidateFontSize));
 
-        inih::INIWriter::write(settingsPath.string(), r);
+        inih::INIWriter::write(settingsPath.string(), r, true);
     }
 }

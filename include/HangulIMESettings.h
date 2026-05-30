@@ -21,7 +21,6 @@ namespace HangulIME {
         ~HangulIMESettings() {
         }
 
-        void defaultSettings();
         void loadSettings();
         void saveSettings();
 

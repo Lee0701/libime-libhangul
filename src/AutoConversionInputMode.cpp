@@ -40,12 +40,12 @@ namespace HangulIME {
             inputs.pop_back();
             break;
         case VK_SPACE:
-            commitCurrent(ic);
+            inputs.push_back(' ');
+            candidates->setIndex(0);
             break;
         case VK_RETURN:
-            this->flush(ic);
-            this->update(ic);
-            return true;
+            commitCurrent(ic);
+            break;
         case VK_LEFT:
             break;
         case VK_RIGHT:
@@ -171,8 +171,11 @@ namespace HangulIME {
     void AutoConversionInputMode::commitCurrent(InputContext *context) {
         std::wstring selected = this->candidates->getCandidate();
         this->locked += selected;
+        if(converted.length() > locked.length() && converted[locked.length()] == L' ') {
+            this->locked += L' ';
+        }
         candidates->setIndex(0);
-        if(locked.length() == converted.length()) {
+        if(locked.length() >= converted.length()) {
             this->flush(context);
         }
     }

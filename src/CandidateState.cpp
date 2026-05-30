@@ -88,6 +88,7 @@ namespace HangulIME {
 
     std::vector<std::wstring> CandidateState::getPageCandidates() const {
         std::vector<std::wstring> result;
+        if(index < 0) return result;
         int start = getPage() * pageSize;
         int end = std::min(start + pageSize, (int) candidates.size());
         for(int i = start ; i < end ; i++) {

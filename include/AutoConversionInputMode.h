@@ -27,7 +27,7 @@ namespace HangulIME {
         virtual void onDeactivate();
         virtual bool testEditKey(int code);
         virtual bool onEditKey(void *context, int code);
-        virtual void onChar(void *context, int code);
+        virtual bool onChar(void *context, int code);
         virtual void onReset(void *context);
 
     private:

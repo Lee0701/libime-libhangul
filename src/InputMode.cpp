@@ -21,7 +21,8 @@ namespace HangulIME {
         return false;
     }
 
-    void InputMode::onChar(void *context, int code) {
+    bool InputMode::onChar(void *context, int code) {
+        return false;
     }
 
     void InputMode::onReset(void *context) {

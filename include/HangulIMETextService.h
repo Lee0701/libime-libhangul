@@ -18,6 +18,8 @@ namespace HangulIME {
         Ime::ComPtr<Ime::CandidateWindow> candidateWindow;
         HFONT candidateFont;
 
+        InputMode *hangulInputMode;
+        InputMode *asciiInputMode;
         InputMode *inputMode;
 
     public:

@@ -10,7 +10,9 @@ namespace HangulIME {
         char path[MAX_PATH];
         GetModuleFileName(module->hInstance(), path, sizeof(path));
         std::filesystem::path installDir = std::filesystem::path(path).parent_path();
-        this->inputMode = new AutoConversionInputMode(installDir,  "2");
+        this->hangulInputMode = new AutoConversionInputMode(installDir,  "2");
+        this->asciiInputMode = new InputMode();
+        this->inputMode = asciiInputMode;
 
         LOGFONT lf;
         composingFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
@@ -52,6 +54,10 @@ namespace HangulIME {
         case VK_RETURN:
         case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN:
             return inputMode->testEditKey(keyCode);
+        case VK_ESCAPE:
+            return true;
+        case VK_HANGUL:
+            return true;
         }
         return keyEvent.isChar();
     }
@@ -64,14 +70,23 @@ namespace HangulIME {
         }
         int keyCode = keyEvent.keyCode();
         switch(keyCode) {
+        case VK_ESCAPE:
+            inputMode->onReset(&context);
+            return true;
+        case VK_HANGUL:
+            if(inputMode == hangulInputMode) {
+                inputMode = asciiInputMode;
+            } else {
+                inputMode = hangulInputMode;
+            }
+            return true;
         case VK_BACK:
         case VK_SPACE:
         case VK_RETURN:
         case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN:
             return inputMode->onEditKey(&context, keyCode);
         }
-        inputMode->onChar(&context, keyEvent.charCode());
-        return true;
+        return inputMode->onChar(&context, keyEvent.charCode());
     }
 
     bool TextService::filterKeyUp(Ime::KeyEvent& keyEvent) {

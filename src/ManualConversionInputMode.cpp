@@ -39,7 +39,7 @@ namespace HangulIME {
         return false;
     }
 
-    void ManualConversionInputMode::onChar(void *context, int code) {
+    bool ManualConversionInputMode::onChar(void *context, int code) {
         InputContext *inputContext = (InputContext *) context;
         bool res = hangul_ic_process(hic, code);
         this->commit(inputContext, &commit_str());
@@ -49,6 +49,7 @@ namespace HangulIME {
             commit += (wchar_t) code;
             this->commit(inputContext, &commit);
         }
+        return true;
     }
 
     void ManualConversionInputMode::onReset(void *context) {

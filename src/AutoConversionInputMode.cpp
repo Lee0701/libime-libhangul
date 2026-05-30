@@ -82,10 +82,11 @@ namespace HangulIME {
         return true;
     }
 
-    void AutoConversionInputMode::onChar(void *context, int code) {
+    bool AutoConversionInputMode::onChar(void *context, int code) {
         inputs.push_back(code);
         candidates->setIndex(0);
         this->update((InputContext *) context);
+        return true;
     }
 
     void AutoConversionInputMode::onReset(void *context) {

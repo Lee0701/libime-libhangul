@@ -91,7 +91,8 @@ namespace HangulIME {
         case VK_HANJA:
             result = currentInputMode->testEditKey(keyCode);
         }
-        if(!result) {
+        bool isShift = keyCode == VK_SHIFT || keyCode == VK_LSHIFT || keyCode == VK_SHIFT;
+        if(!result && !isShift) {
             hideComposingWindow();
             hideCandidateWindow();
         }

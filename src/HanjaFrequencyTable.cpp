@@ -4,11 +4,11 @@
 namespace HangulIME {
     HanjaFrequencyTable::HanjaFrequencyTable(const std::vector<std::string> &fileNames) {
         this->frequencies = new std::map<std::wstring, int>;
+        char s[64];
         for(auto &fileName : fileNames) {
             FILE *fp = fopen(fileName.c_str(), "r");
             if(fp == nullptr) continue;
 
-            char s[64];
             while(fscanf(fp, "%s\n", s) > 0) {
                 std::wstring str = s2ws(s);
                 size_t index = str.find(L":");

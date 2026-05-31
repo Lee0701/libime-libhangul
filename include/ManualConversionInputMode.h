@@ -3,14 +3,16 @@
 #include <hangul.h>
 #include "HangulIMESettings.h"
 #include "InputContext.h"
-#include "HanjaConverter.h"
 #include "CandidateState.h"
+#include "HanjaConverter.h"
+#include "SymbolTable.h"
 
 namespace HangulIME {
     class ManualConversionInputMode : public InputMode {
     private:
         HangulInputContext *hic;
         HanjaConverter *converter;
+        SymbolTable *symbolTable;
         std::wstring composing;
         CandidateState *candidates;
 

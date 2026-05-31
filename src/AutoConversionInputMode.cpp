@@ -6,6 +6,9 @@ namespace HangulIME {
         this->hic = hangul_ic_new(settings->hangulKeyboardType.c_str());
         hangul_ic_set_option(hic, HANGUL_IC_OPTION_AUTO_REORDER, settings->autoReorder);
         this->converter = new HanjaConverter(settings->getInstallDir() / "hanja");
+        std::vector<std::string> symbolFiles;
+        symbolFiles.push_back((settings->getInstallDir() / "data" / "symbols.txt").string());
+        this->symbolTable = new SymbolTable(symbolFiles);
         this->composing = L"";
         this->converted = L"";
         this->locked = L"";
@@ -15,6 +18,7 @@ namespace HangulIME {
     AutoConversionInputMode::~AutoConversionInputMode() {
         hangul_ic_delete(hic);
         delete this->converter;
+        delete this->symbolTable;
         delete this->candidates;
     }
 
@@ -110,12 +114,17 @@ namespace HangulIME {
         const int searchLen = min(10, (int) this->composing.length() - lockedLen);
         int maxCandLen = min(1, (int) this->composing.length() - lockedLen);
         for(int i = (int) searchLen ; i >= 1 ; i--) {
-            std::vector<std::wstring> candidates = this->converter->convert(composing.substr(lockedLen, i));
+            std::wstring str = this->composing.substr(lockedLen, i);
+            std::vector<std::wstring> candidates = this->converter->convert(str);
             for(auto &candidate : candidates) {
                 this->candidates->addCandidate(candidate);
             }
             if(candidates.size() > 0 && i > maxCandLen) {
                 maxCandLen = i;
+            }
+            std::vector<std::wstring> symbols = this->symbolTable->symbols(str);
+            for(auto &symbol : symbols) {
+                this->candidates->addCandidate(symbol);
             }
         }
         if(maxCandLen > 0) {

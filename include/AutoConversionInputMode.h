@@ -7,12 +7,14 @@
 #include "InputContext.h"
 #include "CandidateState.h"
 #include "HanjaConverter.h"
+#include "SymbolTable.h"
 
 namespace HangulIME {
     class AutoConversionInputMode : public InputMode {
     private:
         HangulInputContext *hic;
         HanjaConverter *converter;
+        SymbolTable *symbolTable;
         std::vector<int> inputs;
         std::wstring composing;
         std::wstring converted;

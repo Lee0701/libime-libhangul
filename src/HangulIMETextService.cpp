@@ -110,7 +110,7 @@ namespace HangulIME {
         switch(keyCode) {
         case VK_ESCAPE:
             currentInputMode->onReset(&context);
-            return true;
+            return false;
         case VK_HANGUL:
             currentInputMode->onReset(&context);
             currentInputMode->onDeactivate();

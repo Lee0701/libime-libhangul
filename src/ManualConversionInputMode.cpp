@@ -5,6 +5,9 @@ namespace HangulIME {
         hic = hangul_ic_new(settings->hangulKeyboardType.c_str());
         hangul_ic_set_option(hic, HANGUL_IC_OPTION_AUTO_REORDER, settings->autoReorder);
         this->converter = new HanjaConverter(settings->getInstallDir() / "hanja");
+        std::vector<std::string> symbolFiles;
+        symbolFiles.push_back((settings->getInstallDir() / "data" / "symbols.txt").string());
+        this->symbolTable = new SymbolTable(symbolFiles);
         this->composing = L"";
         this->candidates = new CandidateState(9);
     }
@@ -12,6 +15,7 @@ namespace HangulIME {
     ManualConversionInputMode::~ManualConversionInputMode() {
         hangul_ic_delete(hic);
         delete this->converter;
+        delete this->symbolTable;
         delete this->candidates;
     }
 
@@ -64,10 +68,14 @@ namespace HangulIME {
                 this->candidates->clearCandidates();
                 this->candidates->setIndex(0);
                 std::vector<std::wstring> candidates = converter->convert(this->composing);
-                if(candidates.size() == 0) return true;
                 for(auto &candidate : candidates) {
                     this->candidates->addCandidate(candidate);
                 }
+                std::vector<std::wstring> symbols = this->symbolTable->symbols(this->composing);
+                for(auto &symbol : symbols) {
+                    this->candidates->addCandidate(symbol);
+                }
+                if(!this->candidates->hasCandidates()) return true;
                 ic->updateCandidateWindow(&this->candidates->getPageCandidates());
                 return true;
             }

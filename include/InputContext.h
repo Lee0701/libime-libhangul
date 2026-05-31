@@ -6,11 +6,11 @@
 namespace HangulIME {
     class InputContext {
     private:
-        Ime::EditSession *session;
+        ITfContext* context;
         TextService *service;
 
     public:
-        InputContext(Ime::EditSession *session, TextService *service) : session(session), service(service) {}
+        InputContext(ITfContext* context, TextService *service) : context(context), service(service) {}
 
         void compose(std::wstring *text);
         void commit(std::wstring *text);

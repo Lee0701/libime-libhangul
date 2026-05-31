@@ -97,17 +97,17 @@ namespace HangulIME {
         return result;
     }
 
-    bool TextService::onKeyDown(Ime::KeyEvent& keyEvent, Ime::EditSession *session) {
-        InputContext context(session, this);
+    bool TextService::onKeyDown(Ime::KeyEvent& keyEvent, ITfContext* context) {
+        InputContext ic(context, this);
         int keyCode = keyEvent.keyCode();
         bool controlPressed = keyEvent.isKeyDown(VK_CONTROL) || keyEvent.isKeyDown(VK_LCONTROL) || keyEvent.isKeyDown(VK_RCONTROL);
         if(controlPressed && keyCode != VK_HANGUL && keyCode != VK_HANJA) {
-            currentInputMode->onReset(&context);
+            currentInputMode->onReset(&ic);
             return false;
         }
         switch(keyCode) {
         case VK_HANGUL:
-            currentInputMode->onReset(&context);
+            currentInputMode->onReset(&ic);
             currentInputMode->onDeactivate();
             if(currentInputMode == hangulInputMode) {
                 currentInputMode = asciiInputMode;
@@ -122,16 +122,16 @@ namespace HangulIME {
         case VK_SPACE:
         case VK_RETURN:
         case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN:
-            return currentInputMode->onEditKey(&context, keyCode);
+            return currentInputMode->onEditKey(&ic, keyCode);
         }
-        return currentInputMode->onChar(&context, keyEvent.charCode());
+        return currentInputMode->onChar(&ic, keyEvent.charCode());
     }
 
     bool TextService::filterKeyUp(Ime::KeyEvent& keyEvent) {
         return false;
     }
 
-    bool TextService::onKeyUp(Ime::KeyEvent& keyEvent, Ime::EditSession *session) {
+    bool TextService::onKeyUp(Ime::KeyEvent& keyEvent, ITfContext* context) {
         return false;
     }
 
@@ -160,20 +160,9 @@ namespace HangulIME {
     void TextService::onCompositionTerminated(bool forced) {
     }
 
-    void TextService::compose(Ime::EditSession *session, std::wstring *text) {
-        if(!this->isComposing()) this->startComposition(session->context());
-        this->setCompositionString(session, text->c_str(), (int) text->length());
-    }
-
-    void TextService::commit(Ime::EditSession *session, std::wstring *text) {
-        if(!this->isComposing()) this->startComposition(session->context());
-        this->setCompositionString(session, text->c_str(), (int) text->length());
-        this->endComposition(session->context());
-    }
-
-    void TextService::createComposingWindow(Ime::EditSession *session) {
+    void TextService::createComposingWindow(ITfContext* context) {
         if(!composingWindow) {
-            composingWindow = new Ime::CandidateWindow(this, session);
+            composingWindow = new Ime::CandidateWindow(this, context);
             composingWindow->Release();
 
             composingWindow->setFont(composingFont);
@@ -188,8 +177,8 @@ namespace HangulIME {
         }
     }
 
-    void TextService::updateComposingWindow(Ime::EditSession *session, std::wstring *composing) {
-        createComposingWindow(session);
+    void TextService::updateComposingWindow(ITfContext* context, std::wstring *composing) {
+        createComposingWindow(context);
         if(!composingWindow) return;
 
         composingWindow->clear();
@@ -198,7 +187,7 @@ namespace HangulIME {
         composingWindow->refresh();
 
         RECT textRect;
-        if(selectionRect(session, &textRect)) {
+        if(selectionRect(context, &textRect)) {
             composingWindow->move(textRect.left, textRect.bottom);
         }
 
@@ -224,9 +213,9 @@ namespace HangulIME {
         }
     }
 
-    void TextService::createCandidateWindow(Ime::EditSession *session) {
+    void TextService::createCandidateWindow(ITfContext* context) {
         if(!candidateWindow) {
-            candidateWindow = new Ime::CandidateWindow(this, session);
+            candidateWindow = new Ime::CandidateWindow(this, context);
             candidateWindow->Release();
 
             candidateWindow->setFont(candidateFont);
@@ -241,8 +230,8 @@ namespace HangulIME {
         }
     }
 
-    void TextService::updateCandidateWindow(Ime::EditSession *session, std::vector<std::wstring> *candidates) {
-        createCandidateWindow(session);
+    void TextService::updateCandidateWindow(ITfContext* context, std::vector<std::wstring> *candidates) {
+        createCandidateWindow(context);
         if(!candidateWindow) return;
 
         candidateWindow->clear();
@@ -257,7 +246,7 @@ namespace HangulIME {
         candidateWindow->refresh();
 
         RECT textRect, composingWindowRect;
-        if(selectionRect(session, &textRect)) {
+        if(selectionRect(context, &textRect)) {
             int height = 0;
             if(composingWindow) {
                 composingWindow->rect(&composingWindowRect);

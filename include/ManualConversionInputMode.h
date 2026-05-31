@@ -28,6 +28,9 @@ namespace HangulIME {
         virtual void onReset(void *context);
 
     private:
+        bool showCandidates(InputContext *context);
+        bool commitCandidates(InputContext *context);
+
         void compose(InputContext *context, std::wstring *str);
         void commit(InputContext *context, std::wstring *str);
         void flush(InputContext *context);

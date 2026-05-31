@@ -64,21 +64,8 @@ namespace HangulIME {
                 return result;
             }
         case VK_HANJA:
-            if(this->composing.length() > 0) {
-                this->candidates->clearCandidates();
-                this->candidates->setIndex(0);
-                std::vector<std::wstring> candidates = converter->convert(this->composing);
-                for(auto &candidate : candidates) {
-                    this->candidates->addCandidate(candidate);
-                }
-                std::vector<std::wstring> symbols = this->symbolTable->symbols(this->composing);
-                for(auto &symbol : symbols) {
-                    this->candidates->addCandidate(symbol);
-                }
-                if(!this->candidates->hasCandidates()) return true;
-                ic->updateCandidateWindow(&this->candidates->getPageCandidates());
-                return true;
-            }
+            if(this->showCandidates(ic)) return true;
+            break;
         case VK_UP:
             if(this->candidates->hasCandidates()) {
                 candidates->moveCursor(-1);
@@ -94,12 +81,13 @@ namespace HangulIME {
                 return true;
             }
         case VK_RETURN:
+            if(this->commitCandidates(ic)) return true;
+            break;
         case VK_SPACE:
-            if(this->candidates->hasCandidates()) {
-                this->commit(ic, &this->candidates->getCandidate());
-                this->flush(ic);
-                return true;
-            }
+            if(this->commitCandidates(ic)) return true;
+            this->flush(ic);
+            this->commit(ic, &std::wstring(L" "));
+            return true;
         }
         this->flush(ic);
         return false;
@@ -113,10 +101,16 @@ namespace HangulIME {
         ic->updateCandidateWindow(nullptr);
 
         bool res = hangul_ic_process(hic, code);
-        this->commit(ic, &commit_str());
-        this->compose(ic, &preedit_str());
+        std::wstring commit = this->commit_str();
+        if(commit.length() > 0) {
+            this->commit(ic, &commit);
+        }
+        std::wstring preedit = preedit_str();
+        if(preedit.length() > 0) {
+            this->compose(ic, &preedit);
+        }
         if(!res) {
-            std::wstring commit(1,(wchar_t) code);
+            std::wstring commit(1, (wchar_t) code);
             this->commit(ic, &commit);
         }
         return true;
@@ -124,6 +118,32 @@ namespace HangulIME {
 
     void ManualConversionInputMode::onReset(void *context) {
         this->flush((InputContext *) context);
+    }
+
+    bool ManualConversionInputMode::showCandidates(InputContext *context) {
+        if(this->composing.length() == 0) return false;
+
+        this->candidates->clearCandidates();
+        this->candidates->setIndex(0);
+        std::vector<std::wstring> candidates = converter->convert(this->composing);
+        for(auto &candidate : candidates) {
+            this->candidates->addCandidate(candidate);
+        }
+        std::vector<std::wstring> symbols = this->symbolTable->symbols(this->composing);
+        for(auto &symbol : symbols) {
+            this->candidates->addCandidate(symbol);
+        }
+        if(!this->candidates->hasCandidates()) return true;
+        context->updateCandidateWindow(&this->candidates->getPageCandidates());
+        return true;
+    }
+
+    bool ManualConversionInputMode::commitCandidates(InputContext *context) {
+        if(!this->candidates->hasCandidates()) return false;
+
+        this->commit(context, &this->candidates->getCandidate());
+        this->flush(context);
+        return true;
     }
 
     void ManualConversionInputMode::compose(InputContext *context, std::wstring *str) {

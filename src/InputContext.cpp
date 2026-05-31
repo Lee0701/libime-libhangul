@@ -2,21 +2,25 @@
 
 namespace HangulIME {
     void InputContext::compose(std::wstring *text) {
-        if(!service->isComposing()) service->startComposition(session->context());
-        service->setCompositionString(session, text->c_str(), (int) text->length());
+        if(text == nullptr) return;
+        service->setCompositionString(context, text->c_str(), (int) text->length());
     }
 
     void InputContext::commit(std::wstring *text) {
-        if(!service->isComposing()) service->startComposition(session->context());
-        service->setCompositionString(session, text->c_str(), (int) text->length());
-        service->endComposition(session->context());
+        if(text == nullptr || text->length() == 0) return;
+        if(service->isComposing()) {
+            service->setCompositionString(context, text->c_str(), (int) text->length());
+            service->endComposition(context);
+        } else {
+            service->appendText(context, text->c_str(), (int) text->length());
+        }
     }
 
     void InputContext::updateComposingWindow(std::wstring *composing) {
         if(composing == nullptr || composing->length() == 0) {
             service->hideComposingWindow();
         } else {
-            service->updateComposingWindow(session, composing);
+            service->updateComposingWindow(context, composing);
         }
     }
 
@@ -24,7 +28,7 @@ namespace HangulIME {
         if(candidates == nullptr || candidates->size() == 0) {
             service->hideCandidateWindow();
         } else {
-            service->updateCandidateWindow(session, candidates);
+            service->updateCandidateWindow(context, candidates);
         }
     }
 

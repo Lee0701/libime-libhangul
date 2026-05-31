@@ -34,10 +34,10 @@ namespace HangulIME {
         virtual void onFocus();
 
         virtual bool filterKeyDown(Ime::KeyEvent& keyEvent);
-        virtual bool onKeyDown(Ime::KeyEvent& keyEvent, Ime::EditSession *session);
+        virtual bool onKeyDown(Ime::KeyEvent& keyEvent, ITfContext* context);
 
         virtual bool filterKeyUp(Ime::KeyEvent& keyEvent);
-        virtual bool onKeyUp(Ime::KeyEvent& keyEvent, Ime::EditSession *session);
+        virtual bool onKeyUp(Ime::KeyEvent& keyEvent, ITfContext* context);
 
         virtual bool onPreservedKey(const GUID& guid);
 
@@ -55,16 +55,13 @@ namespace HangulIME {
         // if forced is false, the composition is terminated gracefully by endComposition().
         virtual void onCompositionTerminated(bool forced);
 
-        void createComposingWindow(Ime::EditSession *session);
-        void updateComposingWindow(Ime::EditSession *session, std::wstring *composing);
+        void createComposingWindow(ITfContext* context);
+        void updateComposingWindow(ITfContext* context, std::wstring *composing);
         void hideComposingWindow();
 
-        void createCandidateWindow(Ime::EditSession *session);
-        void updateCandidateWindow(Ime::EditSession *session, std::vector<std::wstring> *candidates);
+        void createCandidateWindow(ITfContext* context);
+        void updateCandidateWindow(ITfContext* context, std::vector<std::wstring> *candidates);
         void hideCandidateWindow();
-
-        void compose(Ime::EditSession *session, std::wstring *text);
-        void commit(Ime::EditSession *session, std::wstring *text);
 
         Ime::CandidateWindow *getCandidateWindow();
 

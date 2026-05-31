@@ -76,14 +76,12 @@ namespace HangulIME {
         }
         bool result = keyEvent.isChar();
         switch(keyCode) {
+        case VK_ESCAPE:
         case VK_BACK:
         case VK_SPACE:
         case VK_RETURN:
         case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN:
             result = currentInputMode->testEditKey(keyCode);
-            break;
-        case VK_ESCAPE:
-            result = true;
             break;
         case VK_HANGUL:
             result = true;
@@ -108,9 +106,6 @@ namespace HangulIME {
             return false;
         }
         switch(keyCode) {
-        case VK_ESCAPE:
-            currentInputMode->onReset(&context);
-            return false;
         case VK_HANGUL:
             currentInputMode->onReset(&context);
             currentInputMode->onDeactivate();
@@ -121,8 +116,8 @@ namespace HangulIME {
             }
             currentInputMode->onActivate();
             return true;
+        case VK_ESCAPE:
         case VK_HANJA:
-            return currentInputMode->onEditKey(&context, keyCode);
         case VK_BACK:
         case VK_SPACE:
         case VK_RETURN:

@@ -30,6 +30,7 @@ namespace HangulIME {
 
     bool AutoConversionInputMode::testEditKey(int code) {
         switch(code) {
+        case VK_ESCAPE:
         case VK_BACK:
         case VK_SPACE:
         case VK_RETURN:
@@ -47,6 +48,9 @@ namespace HangulIME {
             return false;
         }
         switch(code) {
+        case VK_ESCAPE:
+            this->onReset(ic);
+            return false;
         case VK_BACK:
             inputs.pop_back();
             break;
